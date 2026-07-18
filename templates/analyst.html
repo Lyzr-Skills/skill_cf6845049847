@@ -1,0 +1,479 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M3 Release Impact Analysis</title><style>
+:root{--bg:#0e141b;--panel:#19212b;--panel2:#212b37;--panel3:#283340;--bd:#303c4a;--bd2:#3c4a5a;
+--tx:#eef2f6;--tx2:#cdd6df;--mut:#9aa7b4;--lbl:#b6c2cf;--acc:#4ea1ff;--hi:#ff6b62;--med:#ffbe4d;
+--lo:#46d39a;--opp:#bb96ff;--chip:#283340}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,sans-serif;background:var(--bg);color:var(--tx)}
+header.hero{background:linear-gradient(125deg,#1b1a4d 0%,#1e3a8a 50%,#2563eb 100%);border-bottom:1px solid var(--bd)}
+.herowrap{max-width:1560px;margin:0 auto;padding:24px 34px;display:flex;gap:30px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.heroleft{flex:1;min-width:320px}
+.hero .eyebrow{color:#bcd3ff;font-weight:700;font-size:12px;letter-spacing:1.4px;text-transform:uppercase}
+.herometa{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px}
+.herometa .idtag{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:12.5px;padding:4px 11px;border-radius:8px}
+.herometa .idtag b{font-weight:700}
+.herometa .idtag .lbl{color:#bcd3ff;font-weight:600;margin-right:5px}
+.hero h1{margin:7px 0 9px;font-size:27px;color:#fff;letter-spacing:.2px}
+.hero h1 .period{font-size:14px;font-weight:500;color:#cdddff;letter-spacing:0}
+.hero .sub{color:#dce8ff;font-size:13px;max-width:1000px;line-height:1.6;margin:0}
+.hero .sub b{color:#fff;font-weight:700}
+.heroright{flex-shrink:0;display:flex;align-items:center;gap:16px}
+.heroright .legend{display:flex;flex-direction:column;gap:7px;min-width:118px}
+.heroright .lg{display:flex;align-items:center;gap:8px;font-size:13px;color:#dce8ff}
+.heroright .lg .dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.heroright .lg b{margin-left:auto;color:#fff;font-weight:700;font-variant-numeric:tabular-nums}
+.dnum{fill:#fff;font-size:25px;font-weight:800;font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+.dlbl{fill:#bcd3ff;font-size:9px;font-weight:600;font-family:-apple-system,Segoe UI,Roboto,sans-serif;text-transform:uppercase;letter-spacing:.5px}
+.countbar{margin:2px 0 14px;font-size:13px;color:var(--mut);display:flex;align-items:center;gap:8px}
+.countbar b{color:var(--tx2);font-weight:700;font-variant-numeric:tabular-nums}
+.countbar .cmpill{background:rgba(78,161,255,.16);color:var(--acc);border:1px solid rgba(78,161,255,.4);font-weight:700;padding:2px 9px;border-radius:20px;font-size:11.5px}
+.moremsg{grid-column:1/-1;color:var(--mut);font-size:12px;font-style:italic;padding:6px 2px}
+.relbadge{display:inline-block;background:var(--acc);color:#06121f;font-weight:800;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;padding:3px 11px;border-radius:6px;font-size:13px;letter-spacing:.3px}
+.relbadge.maj{background:var(--opp);color:#1a0f2e}
+.refbadge{display:inline-block;background:#22b8cf;color:#04222a;font-weight:700;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;padding:3px 10px;border-radius:6px;font-size:12px;letter-spacing:.2px}
+.wrap{max-width:1560px;margin:0 auto;padding:22px 34px 60px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--bd);margin-bottom:22px}
+.tab{padding:12px 22px;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent;font-size:14px;font-weight:600;transition:.12s}
+.tab:hover{color:var(--tx2)}
+.tab.on{color:var(--tx);border-bottom-color:var(--acc)}
+.tab .b{display:inline-block;background:var(--panel3);border-radius:11px;padding:1px 9px;font-size:11px;margin-left:7px;color:var(--mut);font-weight:600}
+.tab.on .b{background:var(--acc);color:#06121f}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.kpi{background:var(--panel);border:1px solid var(--bd);border-radius:11px;padding:16px 18px}
+.kpi .n{font-size:27px;font-weight:700;letter-spacing:.3px}
+.kpi .l{color:var(--mut);font-size:12px;margin-top:3px;font-weight:500}
+.kpi.hi .n{color:var(--hi)}.kpi.med .n{color:var(--med)}.kpi.lo .n{color:var(--lo)}.kpi.opp .n{color:var(--opp)}
+.legend{font-size:12px;color:var(--mut);margin-bottom:16px;line-height:1.7;max-width:1100px}
+
+/* ---- filter bar ---- */
+.fb{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin-bottom:18px}
+.frow{display:flex;gap:14px;align-items:flex-start;padding:11px 0;border-top:1px solid #232e3a}
+.frow:first-child{padding-top:2px;border-top:none}
+.frow:last-child{padding-bottom:2px}
+.flbl{font-size:11px;color:var(--lbl);text-transform:uppercase;letter-spacing:.7px;font-weight:700;width:82px;flex-shrink:0;padding-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:9px;flex:1}
+.tg{background:var(--panel3);border:1px solid var(--bd2);color:var(--tx2);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:500;user-select:none;transition:.12s;white-space:nowrap;line-height:1.2}
+.tg:hover{border-color:var(--acc);color:#fff}
+.tg .ct{color:var(--mut);font-weight:600;margin-left:4px}
+.tg.on{color:#06121f;font-weight:700;background:var(--acc);border-color:var(--acc)}
+.tg.on .ct{color:rgba(6,18,31,.6)}
+.tg.on[data-v=High]{background:var(--hi);border-color:var(--hi)}
+.tg.on[data-v=Medium]{background:var(--med);border-color:var(--med)}
+.tg.on[data-v=Low]{background:var(--lo);border-color:var(--lo)}
+.tg.on[data-v=Defect]{background:#ff8b80;border-color:#ff8b80}
+.tg.on[data-v=Enhancement]{background:#7fc3ff;border-color:#7fc3ff}
+.tg.on[data-g=opp]{background:var(--opp);border-color:var(--opp)}
+input,select{background:var(--panel2);border:1px solid var(--bd2);color:var(--tx);padding:9px 12px;border-radius:8px;font-size:13px;font-family:inherit}
+input{flex:1;min-width:220px}
+input::placeholder{color:var(--mut)}
+select{min-width:120px}
+
+/* ---- cards ---- */
+.card{background:var(--panel);border:1px solid var(--bd);border-left:4px solid var(--bd2);border-radius:11px;padding:15px 18px;margin-bottom:12px}
+.card.High{border-left-color:var(--hi)}.card.Medium{border-left-color:var(--med)}.card.Low{border-left-color:var(--lo)}
+.card.opp{border-left-color:var(--opp)}
+.crow{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.sum{font-weight:600;font-size:14.5px;margin:1px 0 2px;color:var(--tx)}
+.meta{color:var(--mut);font-size:12px;margin:5px 0 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--panel3);color:var(--mut);white-space:nowrap;font-weight:600}
+.tag.High{background:rgba(255,107,98,.16);color:var(--hi)}
+.tag.Medium{background:rgba(255,190,77,.16);color:var(--med)}
+.tag.Low{background:rgba(70,211,154,.16);color:var(--lo)}
+.tag.Defect{color:#ff9089}.tag.Enhancement{color:#8ec8ff}
+.prog{display:inline-block;background:#163553;color:#8ec8ff;padding:2px 9px;border-radius:6px;font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:2px 4px 2px 0}
+.prog.exact{background:#52201f;color:#ffa69d;font-weight:700}
+.scope{font-size:11px;padding:2px 9px;border-radius:6px;font-weight:600}
+.scope.spec{background:rgba(255,107,98,.14);color:#ffa69d}
+.scope.gen{background:rgba(154,167,180,.16);color:var(--tx2)}
+.badge{font-size:10.5px;padding:2px 8px;border-radius:6px;font-weight:600}
+.badge.use{background:rgba(78,161,255,.16);color:var(--acc)}
+.badge.opp{background:rgba(187,150,255,.16);color:var(--opp)}
+.badge.mod{background:var(--panel3);color:var(--tx2)}
+.badge.exp{background:rgba(255,190,77,.16);color:var(--med);font-weight:700}
+.toggle{color:var(--acc);cursor:pointer;font-size:12.5px;font-weight:600;margin-top:9px;display:inline-block;margin-right:18px}
+.toggle:hover{text-decoration:underline}
+.isum{margin-top:11px;background:rgba(78,161,255,.07);border:1px solid rgba(78,161,255,.22);border-left:3px solid var(--acc);border-radius:8px;padding:11px 13px}
+.isum h4{margin:0 0 5px;font-size:11px;color:var(--acc);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.isum .body{color:var(--tx2);font-size:13px;line-height:1.6;white-space:pre-wrap}
+.det{display:none;margin-top:11px;border-top:1px solid var(--bd);padding-top:11px}
+.det.show{display:block}
+.det h4{margin:0 0 5px;font-size:11px;color:var(--lbl);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.det .body{color:var(--tx2);font-size:13px;line-height:1.65;white-space:pre-wrap;margin-bottom:12px}
+.det .body:last-child{margin-bottom:0}
+.aff{display:none;margin-top:11px;border-top:1px solid var(--bd);padding-top:11px}
+.aff.show{display:block}
+.aff h4{margin:0 0 8px;font-size:11px;color:var(--lbl);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.complist{display:grid;gap:7px}
+.complist.c1{grid-template-columns:1fr}
+.complist.c2{grid-template-columns:1fr 1fr}
+.complist.c3{grid-template-columns:1fr 1fr 1fr}
+.comp{padding:7px 10px;background:var(--panel2);border:1px solid #28333f;border-radius:7px;min-width:0}
+.comp.exact{border-color:#52201f;background:rgba(82,32,31,.18)}
+.comp .capi{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#8ec8ff;font-weight:600;word-break:break-all}
+.comp.exact .capi{color:#ffa69d}
+.comp .csub{display:flex;gap:7px;align-items:center;margin-top:4px;min-width:0}
+.ctype{font-size:9.5px;padding:2px 7px;border-radius:5px;background:var(--panel3);color:var(--mut);font-weight:600;white-space:nowrap;flex-shrink:0}
+.cname{color:var(--mut);font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:960px){.complist.c2,.complist.c3{grid-template-columns:1fr}}
+.kb{font-family:ui-monospace,monospace;font-size:11px;color:var(--lo)}
+.empty{color:var(--mut);text-align:center;padding:48px}
+
+/* ---- module accordion ---- */
+.modhead{display:flex;align-items:center;gap:12px;cursor:pointer;padding:12px 16px;background:var(--panel2);border:1px solid var(--bd);border-radius:9px;margin:16px 0 9px}
+.modhead:hover{border-color:var(--bd2)}
+.modhead .chev{display:inline-block;transition:transform .15s;color:var(--mut);font-size:11px;width:10px}
+.modhead.open .chev{transform:rotate(90deg)}
+.modhead .mn{font-weight:700;font-size:14.5px;color:var(--tx)}
+.modhead .mc{color:var(--mut);font-size:12px;margin-left:auto;font-weight:600}
+.modbody{display:none;padding-left:4px}.modbody.show{display:block}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+.dot.d{background:var(--hi)}.dot.e{background:#8ec8ff}
+.cpcard{background:var(--panel);border:1px solid var(--bd);border-radius:11px;padding:14px 16px;margin-bottom:11px}
+.cphdr{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.cpname{font-weight:700;font-size:13.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--tx);word-break:break-all}
+.cpcount{margin-left:auto;color:var(--mut);font-size:12px;font-weight:600;white-space:nowrap}
+.cpimp{border-top:1px solid var(--bd);padding-top:10px;margin-top:10px}
+.hide{display:none}
+</style></head><body>
+<header class="hero"><div class="herowrap">
+ <div class="heroleft">
+  <div class="eyebrow">M3 Release Impact Analysis</div>
+  <div class="herometa" id="herometa"></div>
+  <h1 id="herotitle"></h1>
+  <div class="sub" id="subline"></div>
+ </div>
+ <div class="heroright" id="heroright"></div>
+</div></header>
+<div class="wrap">
+<div class="tabs">
+ <div class="tab on" data-t="impact">Impact<span class="b" id="tb-impact"></span></div>
+ <div class="tab" data-t="bycomp">By Component<span class="b" id="tb-bycomp"></span></div>
+ <div class="tab" data-t="land">Release Landscape<span class="b" id="tb-land"></span></div>
+ <div class="tab" data-t="opp">Opportunities<span class="b" id="tb-opp"></span></div>
+</div>
+
+<div class="view" id="view-impact">
+ <div class="kpis" id="kpi-impact"></div>
+ <div class="legend"><b style="color:var(--tx2)">Scope</b> — <span class="scope spec">Specific</span> fix names an exact transaction, so only components calling that exact transaction are flagged; <span class="scope gen">General</span> program-level fix flags every component on that program. &nbsp;<b style="color:var(--tx2)">Severity</b> — <span style="color:var(--hi)">High</span> defect on an exact transaction you call · <span style="color:var(--med)">Medium</span> exact-txn enhancement or program-level defect · <span style="color:var(--lo)">Low</span> enhancement.</div>
+ <div class="fb">
+  <div class="frow"><span class="flbl">Severity</span><div class="chips"><span class="tg" data-g="sev" data-v="High">High</span><span class="tg" data-g="sev" data-v="Medium">Medium</span><span class="tg" data-g="sev" data-v="Low">Low</span></div></div>
+  <div class="frow"><span class="flbl">Type</span><div class="chips"><span class="tg" data-g="typ" data-v="Defect">Defect</span><span class="tg" data-g="typ" data-v="Enhancement">Enhancement</span></div></div>
+  <div class="frow"><span class="flbl">Release kind</span><div class="chips"><span class="tg" data-g="kind" data-v="major">Major (Apr / Oct)</span><span class="tg" data-g="kind" data-v="minor">Minor (monthly)</span><span class="tg cmbtn" data-g="month" data-v="on">Current month only</span><span class="tg" data-g="dash" data-v="on">Customer dashboard records (current month · specific)</span></div></div>
+  <div class="frow"><span class="flbl">Component</span><div class="chips" id="i-comps"></div></div>
+  <div class="frow"><span class="flbl">Display</span><div class="chips"><span class="tg" data-g="detail" data-v="on">Expand details by default</span><span class="tg" data-g="aff" data-v="on">Expand affected components by default</span></div></div>
+  <div class="frow"><span class="flbl">Release</span><div class="chips"><select id="i-rel"><option value="">All releases</option></select><input id="i-q" placeholder="Search summary, program, transaction, KB, module…"></div></div>
+  <div class="frow"><span class="flbl">Toggle expiry</span><div class="chips"><select id="i-exp"><option value="">All</option></select></div></div>
+ </div>
+ <div class="countbar" id="cnt-impact"></div>
+ <div id="i-list"></div>
+</div>
+
+<div class="view hide" id="view-bycomp">
+ <div class="kpis" id="kpi-bycomp"></div>
+ <div class="legend">Your impacted components, pivoted so each component lists <b style="color:var(--tx2)">every</b> release change that hits it — useful when two or more releases touch the same component. Grouped by component type; click a type header to collapse. Exact-transaction links are highlighted <span class="prog exact" style="padding:1px 6px">red</span>.</div>
+ <div class="fb">
+  <div class="frow"><span class="flbl">Component</span><div class="chips" id="c-types"></div></div>
+  <div class="frow"><span class="flbl">Display</span><div class="chips"><span class="tg" data-g="detail" data-v="on">Expand details by default</span></div></div>
+  <div class="frow"><span class="flbl">Search</span><div class="chips"><input id="c-q" placeholder="Search component name, transaction, summary…"></div></div>
+ </div>
+ <div class="countbar" id="cnt-comp"></div>
+ <div id="c-list"></div>
+</div>
+
+<div class="view hide" id="view-land">
+ <div class="kpis" id="kpi-land"></div>
+ <div class="legend">Every release item in the window, grouped by M3 module. <span class="badge use">uses your API</span> touches a program you already integrate · <span class="badge opp">opportunity</span> adds new capability. Click a module header to collapse it.</div>
+ <div class="fb">
+  <div class="frow"><span class="flbl">Modules</span><div class="chips" id="l-mods"></div></div>
+  <div class="frow"><span class="flbl">Type</span><div class="chips"><span class="tg" data-g="typ" data-v="Defect">Defect</span><span class="tg" data-g="typ" data-v="Enhancement">Enhancement</span><span class="tg" data-g="kind" data-v="major">Major (Apr / Oct)</span><span class="tg" data-g="kind" data-v="minor">Minor (monthly)</span><span class="tg cmbtn" data-g="month" data-v="on">Current month only</span><span class="tg" data-g="used" data-v="on">Only ones using my APIs</span><span class="tg" data-g="opp" data-v="on">Only opportunities</span><span class="tg" data-g="detail" data-v="on">Expand details by default</span></div></div>
+  <div class="frow"><span class="flbl">Release</span><div class="chips"><select id="l-rel"><option value="">All releases</option></select><select id="l-exp"><option value="">All toggle-expiry</option></select><input id="l-q" placeholder="Search…"></div></div>
+ </div>
+ <div class="countbar" id="cnt-land"></div>
+ <div id="l-list"></div>
+</div>
+
+<div class="view hide" id="view-opp">
+ <div class="kpis" id="kpi-opp"></div>
+ <div class="legend">New APIs, new transactions and new fields you could adopt. Items on programs you already use are sorted first — lowest adoption effort.</div>
+ <div class="fb">
+  <div class="frow"><span class="flbl">Modules</span><div class="chips" id="o-mods"></div></div>
+  <div class="frow"><span class="flbl">Options</span><div class="chips"><span class="tg" data-g="used" data-v="on">Only on APIs I already use</span><span class="tg" data-g="detail" data-v="on">Expand details by default</span></div></div>
+  <div class="frow"><span class="flbl">Search</span><div class="chips"><input id="o-q" placeholder="Search…"></div></div>
+ </div>
+ <div class="countbar" id="cnt-opp"></div>
+ <div id="o-list"></div>
+</div>
+</div>
+<script>
+const DATA = __PAYLOAD__;
+document.getElementById('subline').innerHTML=
+ `This report cross-references M3 release changes from <b>${DATA.cutoff}</b> onward — the current month and all later releases, plus earlier enhancements whose feature-toggle activation window is still open — against your integration footprint of <b>${DATA.used_api_count} transactions across ${DATA.used_prog_count} programs</b>. `+
+ `<b>${DATA.total_filtered}</b> release items in scope; <b>${DATA.matches.length}</b> touch your applications. Generated ${DATA.generated}.`;
+const M=DATA.matches, LS=DATA.landscape;
+const esc=s=>String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+const sevOrder={High:0,Medium:1,Low:2};
+function heroDonut(segs,num,label){
+ const size=124,stroke=18,r=(size-stroke)/2,c=size/2,circ=2*Math.PI*r,total=segs.reduce((a,x)=>a+x.v,0)||1;
+ let off=0,p=[`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="${stroke}"/>`];
+ segs.forEach(s=>{if(s.v<=0)return;const dash=s.v/total*circ;
+  p.push(`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${s.c}" stroke-width="${stroke}" stroke-dasharray="${dash.toFixed(2)} ${(circ-dash).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${c} ${c})"/>`);off+=dash;});
+ p.push(`<text x="${c}" y="${c-1}" text-anchor="middle" class="dnum">${num}</text>`);
+ p.push(`<text x="${c}" y="${c+15}" text-anchor="middle" class="dlbl">${label}</text>`);
+ return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">${p.join('')}</svg>`;
+}
+(function(){
+ document.getElementById('herotitle').innerHTML=`${DATA.month_label} <span class="period">· current release period & onward</span>`;
+ const sc={High:0,Medium:0,Low:0};M.forEach(x=>sc[x.severity]++);
+ const segs=[{l:'High',v:sc.High,c:'#ff6b62'},{l:'Medium',v:sc.Medium,c:'#ffbe4d'},{l:'Low',v:sc.Low,c:'#46d39a'}];
+ const leg=`<div class="legend">${segs.map(s=>`<div class="lg"><span class="dot" style="background:${s.c}"></span>${s.l}<b>${s.v}</b></div>`).join('')}</div>`;
+ document.getElementById('heroright').innerHTML=heroDonut(segs,M.length,'impacts')+leg;
+ document.querySelectorAll('.cmbtn').forEach(b=>b.textContent='Current month only · '+DATA.cutoff);
+ const hm=[];
+ if(DATA.customer)hm.push(`<span class="idtag"><span class="lbl">Customer</span><b>${esc(DATA.customer)}</b></span>`);
+ if(DATA.tenant)hm.push(`<span class="idtag"><span class="lbl">Tenant</span><b>${esc(DATA.tenant)}</b></span>`);
+ document.getElementById('herometa').innerHTML=hm.join('');
+})();
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+ document.querySelectorAll('.view').forEach(x=>x.classList.add('hide'));
+ t.classList.add('on');document.getElementById('view-'+t.dataset.t).classList.remove('hide');
+}));
+
+function detailBlock(x,open){
+ const parts=[];
+ if(x.overview)parts.push(`<div><h4>Overview of change</h4><div class="body">${esc(x.overview)}</div></div>`);
+ if(x.detailed)parts.push(`<div><h4>Detailed description / solution</h4><div class="body">${esc(x.detailed)}</div></div>`);
+ if(!parts.length)return '';
+ return `<span class="toggle" onclick="this.nextElementSibling.classList.toggle('show')">▸ Details</span><div class="det ${open?'show':''}">${parts.join('')}</div>`;
+}
+function metaLine(x,extra){
+ const kbs=x.kbs.map(k=>`<span class="kb">${k}</span>`).join(' ');
+ const exp=x.expiry?`<span class="badge exp">⏻ toggle expires ${x.expiry}</span>`:'';
+ const rel=`<span class="relbadge ${x.major?'maj':''}">${x.release}</span>${x.major?'<span class="badge mod">major</span>':''}`;
+ const ref=x.ref&&x.ref!='None'?`<span class="refbadge">${x.ref}</span>`:'';
+ return `<div class="meta">${rel}${ref?' '+ref:''}${kbs?' · '+kbs:''} <span class="badge mod">${esc(x.component||x.module)}</span>${exp}${extra||''}</div>`;
+}
+
+/* ===== IMPACT ===== */
+const sc={High:0,Medium:0,Low:0};M.forEach(x=>sc[x.severity]++);
+document.getElementById('kpi-impact').innerHTML=[['','Items scanned',DATA.total_filtered],['','Impact your APIs',M.length],['hi','High',sc.High],['med','Medium',sc.Medium],['lo','Low',sc.Low]].map(k=>`<div class="kpi ${k[0]}"><div class="n">${k[2]}</div><div class="l">${k[1]}</div></div>`).join('');
+[...new Set(M.map(x=>x.release))].sort().reverse().forEach(r=>{const o=document.createElement('option');o.textContent=r;document.getElementById('i-rel').appendChild(o)});
+[...new Set(M.map(x=>x.expiry).filter(Boolean))].sort().reverse().forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;document.getElementById('i-exp').appendChild(o)});
+const COMPTYPES=(DATA.comp_types&&DATA.comp_types.length)?DATA.comp_types:[...new Set(M.flatMap(x=>x.affected.map(c=>c.type)))];
+const icomps=document.getElementById('i-comps');
+COMPTYPES.forEach(t=>{const n=M.filter(x=>x.affected.some(c=>c.type==t)).length;if(!n)return;const s=document.createElement('span');s.className='tg';s.dataset.g='comp';s.dataset.v=t;s.innerHTML=`${t}<span class="ct">${n}</span>`;icomps.appendChild(s)});
+const FI={sev:new Set(),typ:new Set(),comp:new Set(),kind:new Set(),month:false,dash:false,detail:false,aff:false};
+document.querySelectorAll('#view-impact .tg').forEach(t=>t.addEventListener('click',()=>{
+ const g=t.dataset.g,v=t.dataset.v;
+ if(g=='detail'){FI.detail=!FI.detail;t.classList.toggle('on',FI.detail);renderImpact();return;}
+ if(g=='aff'){FI.aff=!FI.aff;t.classList.toggle('on',FI.aff);renderImpact();return;}
+ if(g=='month'){FI.month=!FI.month;t.classList.toggle('on',FI.month);renderImpact();return;}
+ if(g=='dash'){FI.dash=!FI.dash;t.classList.toggle('on',FI.dash);renderImpact();return;}
+ if(FI[g].has(v)){FI[g].delete(v);t.classList.remove('on')}else{FI[g].add(v);t.classList.add('on')}renderImpact();
+}));
+function renderImpact(){
+ const q=document.getElementById('i-q').value.toLowerCase(),rl=document.getElementById('i-rel').value,ex=document.getElementById('i-exp').value;
+ let rows=M.filter(x=>{
+  if(FI.sev.size&&!FI.sev.has(x.severity))return 0;
+  if(FI.typ.size&&!FI.typ.has(x.type))return 0;
+  if(FI.kind.size&&!FI.kind.has(x.major?'major':'minor'))return 0;
+  if(FI.month&&x.release.slice(0,7)!==DATA.cutoff)return 0;
+  if(FI.dash&&!(x.release.slice(0,7)===DATA.cutoff&&x.scope=='specific'))return 0;
+  if(FI.comp.size&&!x.affected.some(c=>FI.comp.has(c.type)))return 0;
+  if(rl&&x.release!=rl)return 0;
+  if(ex&&x.expiry!=ex)return 0;
+  if(q){const b=(x.summary+' '+x.progs.join(' ')+' '+x.txns.join(' ')+' '+x.kbs.join(' ')+' '+x.module+' '+x.overview+' '+x.detailed).toLowerCase();if(!b.includes(q))return 0}
+  return 1;});
+ rows.sort((a,b)=>a.release.localeCompare(b.release)||sevOrder[a.severity]-sevOrder[b.severity]);
+ document.getElementById('cnt-impact').innerHTML=`Showing <b>${rows.length}</b> of <b>${M.length}</b> impacted item(s)`+(FI.dash?` <span class="cmpill">customer dashboard set</span>`:(FI.month?` <span class="cmpill">${DATA.cutoff} only</span>`:''));
+ const L=document.getElementById('i-list');
+ if(!rows.length){L.innerHTML='<div class="empty">No items match.</div>';return}
+ const op=FI.detail, oa=FI.aff;
+ L.innerHTML=rows.map(x=>{
+  const txns=new Set(x.txns);
+  const progs=x.progs.map(p=>{const ex=[...txns].some(t=>t.startsWith(p+'/'));return `<span class="prog ${ex?'exact':''}">${p}</span>`}).join('');
+  const tch=x.txns.map(t=>`<span class="prog exact">${t}</span>`).join('');
+  const scope=x.scope=='specific'?'<span class="scope spec">Specific txn</span>':'<span class="scope gen">General program</span>';
+  // when a component-type filter is active, show only the matching component rows
+  const shown=FI.comp.size?x.affected.filter(c=>FI.comp.has(c.type)):x.affected;
+  const CAP=120, capped=shown.slice(0,CAP);
+  const cols=capped.length<=6?1:(capped.length<=20?2:3);
+  const comps=capped.map(c=>`<div class="comp ${c.exact?'exact':''}"><div class="capi">${c.api}</div><div class="csub"><span class="ctype">${c.type}</span><span class="cname">${esc(c.name)}</span></div></div>`).join('')
+    +(shown.length>CAP?`<div class="moremsg">+ ${shown.length-CAP} more not shown (${shown.length} total — see the source workbook for the full list)</div>`:'');
+  const isum=x.impact_summary?`<div class="isum"><h4>Impact summary</h4><div class="body">${esc(x.impact_summary)}</div></div>`:'';
+  return `<div class="card ${x.severity}"><div class="crow"><div style="flex:1;min-width:0">
+    <div class="sum">${esc(x.summary)}</div>
+    ${metaLine(x,' '+scope)}
+    <div>${progs}${tch}</div></div>
+    <div style="text-align:right;flex-shrink:0"><span class="tag ${x.severity}">${x.severity}</span><br>
+    <span class="tag ${x.type}" style="margin-top:6px;display:inline-block">${x.type}</span></div></div>
+   ${isum}
+   ${detailBlock(x,op)}
+   <span class="toggle" onclick="this.nextElementSibling.classList.toggle('show')">▸ Affected components (${shown.length}${FI.comp.size?' of '+x.n_components:''})</span>
+   <div class="aff ${oa?'show':''}"><h4>Where this lives in your apps (${shown.length}${FI.comp.size?' of '+x.n_components:''})</h4><div class="complist c${cols}">${comps||'<span style="color:var(--mut)">No matching component for this scope.</span>'}</div></div></div>`;
+ }).join('');
+}
+document.getElementById('i-q').addEventListener('input',renderImpact);
+document.getElementById('i-rel').addEventListener('change',renderImpact);
+document.getElementById('i-exp').addEventListener('change',renderImpact);
+
+/* ===== LANDSCAPE ===== */
+const modCounts={};LS.forEach(l=>{modCounts[l.module]=(modCounts[l.module]||0)+1});
+const MODS=Object.keys(modCounts).sort((a,b)=>modCounts[b]-modCounts[a]);
+document.getElementById('kpi-land').innerHTML=[['','Total releases',LS.length],['','Modules',MODS.length],['','Defects',LS.filter(l=>l.type=='Defect').length],['','Enhancements',LS.filter(l=>l.type=='Enhancement').length],['opp','Opportunities',LS.filter(l=>l.opp).length]].map(k=>`<div class="kpi ${k[0]}"><div class="n">${k[2]}</div><div class="l">${k[1]}</div></div>`).join('');
+const lmods=document.getElementById('l-mods');
+MODS.forEach(m=>{const s=document.createElement('span');s.className='tg';s.dataset.m=m;s.innerHTML=`${m}<span class="ct">${modCounts[m]}</span>`;lmods.appendChild(s)});
+[...new Set(LS.map(x=>x.release))].sort().reverse().forEach(r=>{const o=document.createElement('option');o.textContent=r;document.getElementById('l-rel').appendChild(o)});
+[...new Set(LS.map(x=>x.expiry).filter(Boolean))].sort().reverse().forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;document.getElementById('l-exp').appendChild(o)});
+const FL={mod:new Set(),typ:new Set(),kind:new Set(),month:false,usedOnly:false,oppOnly:false,detail:false};
+document.querySelectorAll('#view-land .tg').forEach(t=>t.addEventListener('click',()=>{
+ if(t.dataset.m!==undefined){const m=t.dataset.m;if(FL.mod.has(m)){FL.mod.delete(m);t.classList.remove('on')}else{FL.mod.add(m);t.classList.add('on')}renderLand();return}
+ const g=t.dataset.g;
+ if(g=='used'){FL.usedOnly=!FL.usedOnly;t.classList.toggle('on',FL.usedOnly);renderLand();return}
+ if(g=='opp'){FL.oppOnly=!FL.oppOnly;t.classList.toggle('on',FL.oppOnly);renderLand();return}
+ if(g=='detail'){FL.detail=!FL.detail;t.classList.toggle('on',FL.detail);renderLand();return}
+ if(g=='month'){FL.month=!FL.month;t.classList.toggle('on',FL.month);renderLand();return}
+ const v=t.dataset.v;if(FL[g].has(v)){FL[g].delete(v);t.classList.remove('on')}else{FL[g].add(v);t.classList.add('on')}renderLand();
+}));
+function landCard(x,opp,op){
+ const ub=x.used_prog?'<span class="badge use">uses your API</span>':'';
+ const ob=x.opp?'<span class="badge opp">opportunity</span>':'';
+ const progs=x.progs.map(p=>`<span class="prog">${p}</span>`).join('');
+ return `<div class="card ${opp?'opp':''}"><div class="crow"><div style="flex:1;min-width:0">
+   <div class="sum">${esc(x.summary)}</div>
+   ${metaLine(x,' '+ub+ob)}
+   <div>${progs}</div></div>
+   <div style="flex-shrink:0"><span class="tag ${x.type}">${x.type}</span></div></div>
+   ${detailBlock(x,op)}</div>`;
+}
+function renderLand(){
+ const q=document.getElementById('l-q').value.toLowerCase(),rl=document.getElementById('l-rel').value,ex=document.getElementById('l-exp').value;
+ let rows=LS.filter(x=>{
+  if(FL.mod.size&&!FL.mod.has(x.module))return 0;
+  if(FL.typ.size&&!FL.typ.has(x.type))return 0;
+  if(FL.kind.size&&!FL.kind.has(x.major?'major':'minor'))return 0;
+  if(FL.usedOnly&&!x.used_prog)return 0;
+  if(FL.oppOnly&&!x.opp)return 0;
+  if(FL.month&&x.release.slice(0,7)!==DATA.cutoff)return 0;
+  if(rl&&x.release!=rl)return 0;
+  if(ex&&x.expiry!=ex)return 0;
+  if(q){const b=(x.summary+' '+x.progs.join(' ')+' '+x.component+' '+x.kbs.join(' ')+' '+x.overview+' '+x.detailed).toLowerCase();if(!b.includes(q))return 0}
+  return 1;});
+ document.getElementById('cnt-land').innerHTML=`Showing <b>${rows.length}</b> of <b>${LS.length}</b> release item(s)`+(FL.month?` <span class="cmpill">${DATA.cutoff} only</span>`:'');
+ const L=document.getElementById('l-list');
+ if(!rows.length){L.innerHTML='<div class="empty">No items match.</div>';return}
+ const byMod={};rows.forEach(r=>{(byMod[r.module]=byMod[r.module]||[]).push(r)});
+ const ordered=Object.keys(byMod).sort((a,b)=>byMod[b].length-byMod[a].length);
+ const op=FL.detail;
+ const autoOpen=FL.mod.size>0||q.length>0||ex.length>0;
+ L.innerHTML=ordered.map(m=>{
+  const its=byMod[m];const d=its.filter(i=>i.type=='Defect').length,e=its.length-d,o=its.filter(i=>i.opp).length;
+  const body=its.sort((a,b)=>a.release.localeCompare(b.release)).map(i=>landCard(i,false,op)).join('');
+  return `<div class="modhead ${autoOpen?'open':''}" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+    <span class="chev">▶</span><span class="mn">${m}</span>
+    <span class="badge mod"><span class="dot e"></span>${e} enh</span>
+    <span class="badge mod"><span class="dot d"></span>${d} def</span>
+    ${o?`<span class="badge opp">${o} opp</span>`:''}
+    <span class="mc">${its.length} items</span></div>
+   <div class="modbody ${autoOpen?'show':''}">${body}</div>`;
+ }).join('');
+}
+document.getElementById('l-q').addEventListener('input',renderLand);
+document.getElementById('l-rel').addEventListener('change',renderLand);
+document.getElementById('l-exp').addEventListener('change',renderLand);
+
+/* ===== OPPORTUNITIES ===== */
+const OPP=LS.filter(l=>l.opp);
+document.getElementById('kpi-opp').innerHTML=[['opp','Opportunities',OPP.length],['','On APIs you use',OPP.filter(o=>o.used_prog).length],['','New / unused',OPP.filter(o=>!o.used_prog).length],['','Modules',new Set(OPP.map(o=>o.module)).size]].map(k=>`<div class="kpi ${k[0]}"><div class="n">${k[2]}</div><div class="l">${k[1]}</div></div>`).join('');
+const omods=document.getElementById('o-mods');
+[...new Set(OPP.map(o=>o.module))].sort().forEach(m=>{const s=document.createElement('span');s.className='tg';s.dataset.m=m;s.textContent=m;omods.appendChild(s)});
+const FO={usedOnly:false,mod:new Set(),detail:false};
+document.querySelectorAll('#view-opp .tg').forEach(t=>t.addEventListener('click',()=>{
+ if(t.dataset.m!==undefined){const m=t.dataset.m;if(FO.mod.has(m)){FO.mod.delete(m);t.classList.remove('on')}else{FO.mod.add(m);t.classList.add('on')}renderOpp();return}
+ const g=t.dataset.g;
+ if(g=='detail'){FO.detail=!FO.detail;t.classList.toggle('on',FO.detail);renderOpp();return}
+ FO.usedOnly=!FO.usedOnly;t.classList.toggle('on',FO.usedOnly);renderOpp();
+}));
+function renderOpp(){
+ const q=document.getElementById('o-q').value.toLowerCase();
+ let rows=OPP.filter(x=>{
+  if(FO.usedOnly&&!x.used_prog)return 0;
+  if(FO.mod.size&&!FO.mod.has(x.module))return 0;
+  if(q){const b=(x.summary+' '+x.progs.join(' ')+' '+x.component+' '+x.overview+' '+x.detailed).toLowerCase();if(!b.includes(q))return 0}
+  return 1;});
+ rows.sort((a,b)=>a.release.localeCompare(b.release)||(b.used_prog?1:0)-(a.used_prog?1:0));
+ document.getElementById('cnt-opp').innerHTML=`Showing <b>${rows.length}</b> of <b>${OPP.length}</b> opportunit${rows.length==1?'y':'ies'}`;
+ const L=document.getElementById('o-list');
+ if(!rows.length){L.innerHTML='<div class="empty">No opportunities match.</div>';return}
+ const op=FO.detail;
+ L.innerHTML=rows.map(x=>landCard(x,true,op)).join('');
+}
+document.getElementById('o-q').addEventListener('input',renderOpp);
+
+/* ===== BY COMPONENT (pivot) ===== */
+const PIVOT=(()=>{const m=new Map();
+ M.forEach(x=>x.affected.forEach(c=>{const k=c.type+'||'+c.name;
+  if(!m.has(k))m.set(k,{type:c.type,name:c.name,byRef:new Map()});
+  const comp=m.get(k);
+  const rk=(x.ref&&x.ref!='None')?x.ref:x.summary;
+  let rec=comp.byRef.get(rk);
+  if(!rec){rec={m:x,vias:new Set(),exact:false};comp.byRef.set(rk,rec);}
+  rec.vias.add(x.scope=='general'?c.api.split('/')[0]:c.api);
+  rec.exact=rec.exact||c.exact;}));
+ return [...m.values()].map(c=>({type:c.type,name:c.name,
+   impacts:[...c.byRef.values()].map(r=>({m:r.m,vias:[...r.vias],exact:r.exact}))}));})();
+const multi=PIVOT.filter(p=>p.impacts.length>1).length;
+document.getElementById('kpi-bycomp').innerHTML=[['','Components impacted',PIVOT.length],['med','Hit by 2+ changes',multi],['','Impact links',PIVOT.reduce((s,p)=>s+p.impacts.length,0)],['','Component types',new Set(PIVOT.map(p=>p.type)).size]].map(k=>`<div class="kpi ${k[0]}"><div class="n">${k[2]}</div><div class="l">${k[1]}</div></div>`).join('');
+const ctypes=document.getElementById('c-types');
+COMPTYPES.forEach(t=>{const n=PIVOT.filter(p=>p.type==t).length;if(!n)return;const s=document.createElement('span');s.className='tg';s.dataset.t=t;s.innerHTML=`${t}<span class="ct">${n}</span>`;ctypes.appendChild(s)});
+const FC={types:new Set(),detail:false};
+document.querySelectorAll('#view-bycomp .tg').forEach(t=>t.addEventListener('click',()=>{
+ if(t.dataset.t!==undefined){const v=t.dataset.t;if(FC.types.has(v)){FC.types.delete(v);t.classList.remove('on')}else{FC.types.add(v);t.classList.add('on')}renderByComp();return}
+ FC.detail=!FC.detail;t.classList.toggle('on',FC.detail);renderByComp();
+}));
+function cpImpactRow(i,op){
+ const m=i.m;
+ const via=i.vias.map(v=>`<span class="prog ${i.exact?'exact':''}">${v}</span>`).join('');
+ const scope=m.scope=='specific'?'<span class="scope spec">specific txn</span>':'<span class="scope gen">program-level</span>';
+ const isum=m.impact_summary?`<div class="isum"><h4>Impact summary</h4><div class="body">${esc(m.impact_summary)}</div></div>`:'';
+ const exp=m.expiry?`<span class="badge exp">⏻ toggle expires ${m.expiry}</span>`:'';
+ const rel=`<span class="relbadge ${m.major?'maj':''}">${m.release}</span>`;
+ const ref=m.ref&&m.ref!='None'?`<span class="refbadge">${m.ref}</span>`:'';
+ return `<div class="cpimp"><div class="crow"><div style="flex:1;min-width:0">
+   <div class="sum">${esc(m.summary)}</div>
+   <div class="meta">${rel}${ref?' '+ref:''}${m.kbs.length?' · '+m.kbs.map(k=>`<span class="kb">${k}</span>`).join(' '):''} via ${via} ${scope} <span class="badge mod">${m.module}</span>${exp}</div></div>
+   <div style="text-align:right;flex-shrink:0"><span class="tag ${m.severity}">${m.severity}</span> <span class="tag ${m.type}">${m.type}</span></div></div>
+   ${isum}${detailBlock(m,op)}</div>`;
+}
+function renderByComp(){
+ const q=document.getElementById('c-q').value.toLowerCase();
+ let rows=PIVOT.filter(p=>{
+  if(FC.types.size&&!FC.types.has(p.type))return 0;
+  if(q){const b=(p.name+' '+p.type+' '+p.impacts.map(i=>i.vias.join(' ')+' '+i.m.summary+' '+i.m.overview+' '+i.m.detailed).join(' ')).toLowerCase();if(!b.includes(q))return 0}
+  return 1;});
+ document.getElementById('cnt-comp').innerHTML=`Showing <b>${rows.length}</b> of <b>${PIVOT.length}</b> component(s)`;
+ const L=document.getElementById('c-list');
+ if(!rows.length){L.innerHTML='<div class="empty">No components match.</div>';return}
+ const byType={};rows.forEach(p=>{(byType[p.type]=byType[p.type]||[]).push(p)});
+ const order=[...COMPTYPES.filter(t=>byType[t]),...Object.keys(byType).filter(t=>!COMPTYPES.includes(t))];
+ const op=FC.detail;
+ const autoOpen=FC.types.size>0||q.length>0;
+ L.innerHTML=order.map(t=>{
+  const comps=byType[t].sort((a,b)=>b.impacts.length-a.impacts.length||a.name.localeCompare(b.name));
+  const body=comps.map(p=>{
+   const imps=p.impacts.sort((a,b)=>a.m.release.localeCompare(b.m.release)||sevOrder[a.m.severity]-sevOrder[b.m.severity]);
+   return `<div class="cpcard"><div class="cphdr"><span class="ctype">${p.type}</span><span class="cpname">${esc(p.name)}</span>${p.impacts.length>1?'<span class="cpcount">'+p.impacts.length+' changes</span>':'<span class="cpcount">1 change</span>'}</div>${imps.map(i=>cpImpactRow(i,op)).join('')}</div>`;
+  }).join('');
+  return `<div class="modhead ${autoOpen?'open':''}" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')"><span class="chev">▶</span><span class="mn">${t}</span><span class="mc">${comps.length} components</span></div><div class="modbody ${autoOpen?'show':''}">${body}</div>`;
+ }).join('');
+}
+document.getElementById('c-q').addEventListener('input',renderByComp);
+
+document.getElementById('tb-impact').textContent=M.length;
+document.getElementById('tb-bycomp').textContent=PIVOT.length;
+document.getElementById('tb-land').textContent=LS.length;
+document.getElementById('tb-opp').textContent=OPP.length;
+renderImpact();renderByComp();renderLand();renderOpp();
+</script></body></html>
